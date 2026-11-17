@@ -1,0 +1,13 @@
+[Unit]
+Description=ClipStorm public link (Cloudflare quick tunnel)
+After=network-online.target clipstorm.service
+Wants=network-online.target
+
+[Service]
+User=ubuntu
+ExecStart=/home/ubuntu/Desktop/rev/clipstorm/deploy/tunnel.sh
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

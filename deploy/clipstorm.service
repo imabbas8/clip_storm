@@ -1,0 +1,14 @@
+[Unit]
+Description=ClipStorm (viral shorts maker)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/Desktop/rev/clipstorm
+ExecStart=/home/ubuntu/Desktop/rev/clipstorm/run.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

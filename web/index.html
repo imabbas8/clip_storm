@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClipStorm</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ffe600'/><path d='M18 4 8 18h7l-2 10 11-15h-7z' fill='%23111'/></svg>">
+<style>
+:root{--bg:#0c0d10;--panel:#15171c;--panel2:#1c1f26;--line:#2a2e38;--text:#f2f3f5;--dim:#9aa1ad;--accent:#ffe600;--accent-ink:#141200;--red:#ff4d5e;--green:#3ddc84;--blue:#6bb6ff;--r:14px}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--blue)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 80px}
+header{display:flex;align-items:center;gap:12px;padding:18px 0}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.3px}
+.logo i{width:32px;height:32px;border-radius:9px;background:var(--accent);display:grid;place-items:center}
+.logo svg{width:18px;height:18px}
+.sp{flex:1}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:99px;background:var(--panel2);border:1px solid var(--line);font-size:13px;color:var(--dim);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--dim);flex:none}
+.dot.ok{background:var(--green)}.dot.bad{background:var(--red)}.dot.live{background:var(--red);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.btn{border:1px solid var(--line);background:var(--panel2);padding:8px 14px;border-radius:10px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:#4a5060}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.btn.primary:hover{background:#fff06a}
+.btn.danger:hover{border-color:var(--red);color:var(--red)}
+.btn.sm{padding:5px 10px;font-size:13px;border-radius:8px}
+.btn:disabled{opacity:.5;cursor:default}
+.hero{background:linear-gradient(180deg,#1a1c22,#131519);border:1px solid var(--line);border-radius:20px;padding:34px 28px;margin:6px 0 22px;text-align:center}
+.hero h1{margin:0 0 6px;font-size:clamp(24px,4vw,36px);letter-spacing:-.8px;line-height:1.15}
+.hero h1 b{color:var(--accent)}
+.hero p{margin:0 auto 20px;color:var(--dim);max-width:640px}
+.go{display:flex;gap:10px;max-width:760px;margin:0 auto}
+.go input{flex:1;min-width:0;background:#0b0c0f;border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:16px;outline:none}
+.go input:focus{border-color:var(--accent)}
+.go .btn{padding:14px 22px;font-size:16px;border-radius:12px}
+.sub{margin-top:14px;font-size:13px;color:var(--dim)}
+.sub label{color:var(--blue);cursor:pointer;text-decoration:underline}
+.notice{border:1px solid #5a4d00;background:#221e05;color:#f5e9a0;border-radius:var(--r);padding:12px 16px;margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.notice.err{border-color:#6b2530;background:#2a1216;color:#ffc2c9}
+.job{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:16px}
+.jhead{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.jtitle{font-weight:700;font-size:17px;overflow-wrap:anywhere}
+.jmeta{color:var(--dim);font-size:13px;margin-top:2px}
+.badge{font-size:11px;font-weight:800;letter-spacing:.6px;padding:3px 8px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);color:var(--dim)}
+.badge.live{background:#3a1218;border-color:#7a2531;color:#ff9aa5}
+.bar{height:6px;border-radius:99px;background:var(--panel2);overflow:hidden;margin:12px 0 4px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .6s}
+.stage{font-size:13px;color:var(--dim)}
+.livebox{display:grid;grid-template-columns:1.3fr 1fr;gap:12px;margin-top:14px}
+.box{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+.box h4{margin:0 0 8px;font-size:11px;letter-spacing:.7px;text-transform:uppercase;color:var(--dim)}
+.heard{font-size:14px;min-height:66px}
+.heard div{opacity:.55}.heard div:last-child{opacity:1}
+.stats{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--dim);margin-top:10px}
+.stats b{color:var(--text);font-variant-numeric:tabular-nums}
+.meter{display:flex;align-items:flex-end;gap:2px;height:34px;margin-top:10px}
+.meter i{flex:1;background:#3a4050;border-radius:2px;min-height:2px}
+.meter i.hot{background:var(--accent)}
+.log{font-size:13px;max-height:150px;overflow:auto}
+.log div{padding:3px 0;border-bottom:1px solid var(--line);color:var(--dim)}
+.log div:last-child{border:0}.log b{color:var(--text);font-weight:600}
+.clips{display:grid;grid-template-columns:repeat(auto-fill,minmax(216px,1fr));gap:14px;margin-top:16px}
+.clip{background:var(--panel2);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.shot{position:relative;aspect-ratio:9/16;background:#000}
+.shot video,.shot img{width:100%;height:100%;object-fit:cover;display:block}
+.shot .wait{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--dim);font-size:13px;padding:14px}
+.score{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.72);border-radius:8px;padding:2px 8px;font-size:12px;font-weight:800;color:var(--accent)}
+.cbody{padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px;flex:1}
+.ctitle{font-weight:600;font-size:14px;line-height:1.3;overflow-wrap:anywhere}
+.cwhy{font-size:12px;color:var(--dim)}
+.crow{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
+.spin{width:22px;height:22px;border:3px solid #3a4050;border-top-color:var(--accent);border-radius:50%;animation:rot 1s linear infinite;margin:0 auto 8px}
+@keyframes rot{to{transform:rotate(360deg)}}
+.empty{text-align:center;color:var(--dim);padding:40px 10px}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:8px}
+.how div{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:left}
+.how b{display:block;color:var(--text);margin-bottom:4px}
+.nav{display:flex;gap:6px;margin:0 0 16px;border-bottom:1px solid var(--line)}
+.nav button{background:none;border:0;border-bottom:2px solid transparent;padding:10px 14px;color:var(--dim);cursor:pointer;font-weight:600}
+.nav button.on{color:var(--text);border-bottom-color:var(--accent)}
+.nav button span{background:var(--panel2);border-radius:99px;padding:1px 8px;font-size:12px;margin-left:6px;font-weight:500}
+.view{display:none}.view.on{display:block}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;color:var(--dim);font-size:14px}
+.toolbar select,.toolbar input{background:#0b0c0f;border:1px solid var(--line);border-radius:10px;padding:8px 10px;outline:none}
+.chan{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:10px}
+.chan .nm{font-weight:700}.chan .u{color:var(--dim);font-size:13px;overflow-wrap:anywhere}
+.src{font-size:11px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* settings */
+.veil{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:10;overflow:auto;padding:24px 14px}
+.veil.on{display:block}
+.modal{max-width:760px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:18px}
+.mhead{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line)}
+.mhead h2{margin:0;font-size:18px}
+.tabs{display:flex;gap:4px;padding:10px 14px 0;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.tab{padding:8px 12px;border-radius:10px 10px 0 0;cursor:pointer;color:var(--dim);border:0;background:none;border-bottom:2px solid transparent}
+.tab.on{color:var(--text);border-bottom-color:var(--accent)}
+.pane{display:none;padding:18px 20px 22px}.pane.on{display:block}
+.f{margin-bottom:14px}
+.f>label{display:block;font-size:13px;color:var(--dim);margin-bottom:5px}
+.f input[type=text],.f input[type=password],.f input[type=number],.f select{width:100%;background:#0b0c0f;border:1px solid var(--line);border-radius:10px;padding:10px 12px;outline:none}
+.f input:focus,.f select:focus{border-color:var(--accent)}
+.f small{display:block;color:var(--dim);font-size:12px;margin-top:4px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chk{display:flex;gap:9px;align-items:flex-start;margin-bottom:12px;cursor:pointer}
+.chk input{margin-top:4px;accent-color:var(--accent)}
+.result{margin-top:10px;padding:10px 12px;border-radius:10px;font-size:14px;display:none}
+.result.ok{display:block;background:#0f2a1b;border:1px solid #1f6a40;color:#a5f0c5}
+.result.bad{display:block;background:#2a1216;border:1px solid #6b2530;color:#ffc2c9}
+.result.wait{display:block;background:var(--panel2);border:1px solid var(--line);color:var(--dim)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#fff;color:#111;padding:10px 16px;border-radius:10px;font-weight:600;display:none;z-index:20;max-width:90vw}
+code{background:#0b0c0f;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:13px;overflow-wrap:anywhere}
+@media(max-width:700px){.go{flex-direction:column}.livebox,.row2{grid-template-columns:1fr}.hero{padding:24px 16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><i><svg viewBox="0 0 24 24"><path d="M14 2 5 14h6l-2 8 10-13h-6z" fill="#111"/></svg></i>ClipStorm</div>
+    <div class="sp"></div>
+    <span class="pill" id="aiPill"><span class="dot"></span><span>Checking…</span></span>
+    <button class="btn" id="openSettings">Settings</button>
+  </header>
+
+  <nav class="nav" id="nav">
+    <button class="on" data-v="create">Create</button><button data-v="library">Library<span id="nLib">0</span></button><button data-v="channels">Channels<span id="nCh">0</span></button>
+  </nav>
+
+  <div class="view on" id="v-create">
+  <section class="hero">
+    <h1>Paste a link. Get <b>viral shorts</b>.</h1>
+    <p>Any video or live stream: YouTube, Twitch, Kick and more. A panel of AI agents scores every moment for how viral it can go. The best ones are cut, face-tracked, zoomed, captioned and titled. A live stream is watched non-stop.</p>
+    <form class="go" id="goForm">
+      <input id="url" placeholder="https://youtube.com/watch?v=…   or   https://twitch.tv/channel" autocomplete="off" spellcheck="false">
+      <button class="btn primary" id="goBtn">Make shorts</button>
+    </form>
+    <div class="sub">or <label for="file">upload a video file</label><input type="file" id="file" accept="video/*,.mkv,.ts,.flv" hidden> from this computer</div>
+  </section>
+
+  <div id="notices"></div>
+  <div id="jobs"></div>
+  </div>
+
+  <div class="view" id="v-library">
+    <div class="toolbar"><span>Every short you have made.</span><div class="sp"></div>Sort by <select id="libSort"><option value="score">Viral score</option><option value="new">Newest</option></select></div>
+    <div class="clips" id="lib" style="margin-top:0"></div>
+  </div>
+
+  <div class="view" id="v-channels">
+    <div class="toolbar" style="color:var(--text)"><span style="flex:1;min-width:240px;color:var(--dim)">Channels you follow. Each one is checked every two minutes; when it goes live, ClipStorm starts watching and clipping by itself.</span></div>
+    <form class="toolbar" id="chForm"><input id="chUrl" placeholder="https://twitch.tv/channel  or  https://youtube.com/@channel" style="flex:2;min-width:240px" spellcheck="false"><input id="chName" placeholder="Name (optional)" style="flex:1;min-width:140px"><button class="btn primary">Add channel</button></form>
+    <div id="chans"></div>
+  </div>
+</div>
+
+<div class="veil" id="editVeil">
+  <div class="modal" style="max-width:560px">
+    <div class="mhead"><h2>Edit this short</h2><div class="sp"></div><button class="btn sm" id="editClose">Close</button></div>
+    <div class="pane on">
+      <div class="f"><label>Hook (the big title on the video)</label><input type="text" id="e_hook" maxlength="60"></div>
+      <div class="f"><label>Title for the post</label><input type="text" id="e_title" maxlength="100"></div>
+      <div class="f"><label>Description</label><input type="text" id="e_description" maxlength="300"></div>
+      <div class="row2">
+        <div class="f"><label>Starts at (seconds)</label><input type="number" id="e_start" step="0.5"><small>Earlier or later by a few seconds.</small></div>
+        <div class="f"><label>Ends at (seconds)</label><input type="number" id="e_end" step="0.5"></div>
+      </div>
+      <div class="row2">
+        <div class="f"><label>Picture</label><select id="e_layout"></select></div>
+        <div class="f"><label>Caption style</label><select id="e_style"></select></div>
+      </div>
+      <label class="chk"><input type="checkbox" id="e_captions"><span>Captions</span></label>
+      <label class="chk"><input type="checkbox" id="e_edits"><span>Jump cuts, zooms and progress bar</span></label>
+      <div class="actions"><button class="btn primary" id="editSave">Make it again</button></div>
+      <div class="result" id="editResult"></div>
+    </div>
+  </div>
+</div>
+
+<div class="veil" id="veil">
+  <div class="modal">
+    <div class="mhead"><h2>Settings</h2><div class="sp"></div><button class="btn sm" id="closeSettings">Close</button></div>
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-t="ai">AI</button><button class="tab" data-t="asr">Speech</button>
+      <button class="tab" data-t="clips">Shorts</button><button class="tab" data-t="live">Live</button>
+      <button class="tab" data-t="dl">Downloads</button><button class="tab" data-t="yt">YouTube</button>
+    </div>
+
+    <div class="pane on" id="p-ai">
+      <div class="f"><label>AI service</label><select id="ai_provider"></select>
+        <small id="keyLink"></small></div>
+      <div class="f" id="f-key"><label>API key</label><input type="password" id="ai_key" placeholder="Paste your key" autocomplete="off"></div>
+      <div class="f" id="f-url"><label>Address (OpenAI-compatible)</label><input type="text" id="ai_base_url" placeholder="http://127.0.0.1:1234/v1"></div>
+      <div class="f"><label>Model</label><input type="text" id="ai_model" list="modelList" placeholder="model id"><datalist id="modelList"></datalist>
+        <small>The AI picks the moments and writes the hook, title and hashtags. Leave empty to use the suggested model.</small></div>
+      <div class="actions"><button class="btn primary" id="aiTest">Connect and test</button><button class="btn" id="aiModels">Find models</button></div>
+      <div class="result" id="aiResult"></div>
+    </div>
+
+    <div class="pane" id="p-asr">
+      <div class="f"><label>Speech to text</label><select id="asr_provider">
+        <option value="local">On this machine (free, private, slower)</option>
+        <option value="groq">Groq Whisper (very fast, free tier)</option>
+        <option value="openai">OpenAI Whisper</option></select></div>
+      <div class="f" id="f-asrkey"><label>Key for the speech service</label><input type="password" id="asr_key" placeholder="Leave empty to reuse the AI key when it is the same service" autocomplete="off"></div>
+      <div class="f" id="f-asrmodel"><label>Model on this machine</label><select id="asr_local_model">
+        <option value="tiny">tiny: fastest, rough</option><option value="base">base: good balance</option>
+        <option value="small">small: better for Hindi, Urdu and accents, 3x slower</option><option value="medium">medium: best, needs a strong machine</option></select>
+        <small>Downloaded once the first time it is used.</small></div>
+      <div class="f"><label>Language spoken</label><select id="asr_language">
+        <option value="">Detect by itself</option><option value="en">English</option><option value="hi">Hindi</option><option value="ur">Urdu</option>
+        <option value="es">Spanish</option><option value="pt">Portuguese</option><option value="ar">Arabic</option><option value="fr">French</option>
+        <option value="de">German</option><option value="id">Indonesian</option><option value="tr">Turkish</option><option value="ru">Russian</option>
+        <option value="ja">Japanese</option><option value="ko">Korean</option></select></div>
+      <div class="actions"><button class="btn primary" id="asrTest">Save and test</button></div>
+      <div class="result" id="asrResult"></div>
+    </div>
+
+    <div class="pane" id="p-clips">
+      <div class="row2">
+        <div class="f"><label>Shortest short (seconds)</label><input type="number" id="min_len" min="8" max="120"></div>
+        <div class="f"><label>Longest short (seconds)</label><input type="number" id="max_len" min="15" max="180"></div>
+      </div>
+      <div class="row2">
+        <div class="f"><label>Shorts per finished video</label><input type="number" id="max_clips" min="1" max="30"></div>
+        <div class="f"><label>Picture</label><select id="layout"></select></div>
+      </div>
+      <div class="row2">
+        <div class="f"><label>Caption style</label><select id="style"></select></div>
+        <div class="f"><label>Size</label><select id="quality"><option value="1080">1080 x 1920 (best)</option><option value="720">720 x 1280 (faster)</option></select></div>
+      </div>
+      <div class="f"><label>Your channel name on every short (optional)</label><input type="text" id="watermark" placeholder="@YourChannel" maxlength="40"></div>
+      <label class="chk"><input type="checkbox" id="edits"><span><b>Edit the short</b><br><small style="color:var(--dim)">Cut out dead air (jump cuts), punch in and out between sentences, and add the progress bar.</small></span></label>
+      <label class="chk"><input type="checkbox" id="captions"><span><b>Word-by-word captions</b></span></label>
+      <div class="f"><label>Caption letters</label><select id="caption_script">
+        <option value="roman">English letters (Hindi and Urdu written like "yaar kya baat hai")</option><option value="original">As spoken, in its own script</option></select></div>
+      <div class="actions"><button class="btn primary" data-save>Save</button></div>
+    </div>
+
+    <div class="pane" id="p-live">
+      <div class="row2">
+        <div class="f"><label>Check the stream every (minutes)</label><input type="number" id="live_check_min" min="1" max="30"><small>Loud moments and "clip that" are checked at once, whatever this says.</small></div>
+        <div class="f"><label>Most shorts per hour</label><input type="number" id="live_per_hour" min="1" max="60"></div>
+      </div>
+      <div class="row2">
+        <div class="f"><label>Only clip moments with a viral score of at least</label><input type="number" id="min_score" min="0" max="100"><small>0 to 100. Lower means more shorts, higher means pickier.</small></div>
+        <div class="f"><label>Stream kept to cut from (minutes)</label><input type="number" id="buffer_min" min="4" max="60"></div>
+      </div>
+      <div class="row2">
+        <div class="f"><label>AI agents watching together</label><select id="agents"><option value="1">1 agent (cheapest)</option><option value="2">2 agents: Hype + Story</option><option value="3">3 agents: Hype + Story + Hook</option><option value="4">4 agents: Hype + Story + Hook + Funny</option></select><small>Each agent judges the same moment its own way. When several agree, the viral score goes up. More agents use more AI tokens.</small></div>
+        <div class="f"><label>Quiet stream: take the best moment after (minutes)</label><input type="number" id="force_min" min="0" max="240"><small>0 = never. Shorts are made only for moments that score high enough, not for the whole stream.</small></div>
+      </div>
+      <label class="chk"><input type="checkbox" id="wait_for_live"><span><b>Wait for the stream</b><br><small style="color:var(--dim)">If the link is not live yet, keep checking and start by itself when it goes live.</small></span></label>
+      <div class="actions"><button class="btn primary" data-save>Save</button></div>
+    </div>
+
+    <div class="pane" id="p-dl">
+      <div class="f"><label>Best video quality to download</label><select id="max_height"><option value="1080">1080p</option><option value="720">720p (faster)</option><option value="480">480p</option></select></div>
+      <div class="f"><label>YouTube sign-in from a browser on this machine</label><select id="cookies_browser">
+        <option value="">Find it by itself</option><option value="chrome">Chrome</option><option value="firefox">Firefox</option><option value="edge">Edge</option><option value="brave">Brave</option><option value="chromium">Chromium</option></select>
+        <small>YouTube often refuses servers and asks to "sign in to confirm you're not a bot". Choose the browser where you are signed in to YouTube and ClipStorm will use that sign-in for downloads. Twitch, Kick and uploads do not need it.</small></div>
+      <div class="f"><label>Or a cookies.txt file (full path)</label><input type="text" id="cookies_file" placeholder="/home/you/cookies.txt"></div>
+      <div class="actions"><button class="btn primary" data-save>Save</button><button class="btn" id="ytSignin">Check YouTube sign-in</button></div>
+      <div class="result" id="signinResult"></div>
+    </div>
+
+    <div class="pane" id="p-yt">
+      <p style="margin-top:0;color:var(--dim)">Optional: post finished shorts straight to your channel. In <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Google Cloud</a>, switch on "YouTube Data API v3", create an OAuth client of type "Web application", and add this redirect address: <code id="ytRedirect"></code></p>
+      <div class="f"><label>Client ID</label><input type="text" id="yt_client_id" autocomplete="off"></div>
+      <div class="f"><label>Client secret</label><input type="password" id="yt_client_secret" autocomplete="off"></div>
+      <div class="row2">
+        <div class="f"><label>Post as</label><select id="yt_privacy"><option value="private">Private (you check first)</option><option value="unlisted">Unlisted</option><option value="public">Public</option></select></div>
+        <div class="f"><label>&nbsp;</label><label class="chk" style="margin:8px 0 0"><input type="checkbox" id="yt_auto_upload"><span>Post every new short by itself</span></label></div>
+      </div>
+      <div class="actions"><button class="btn primary" id="ytConnect">Save and connect</button><button class="btn" id="ytTest">Test</button><button class="btn danger" id="ytOff">Disconnect</button></div>
+      <div class="result" id="ytResult"></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let S = null, filled = false, clipText = {};
+const FIELDS = ["ai_provider","ai_key","ai_model","ai_base_url","asr_provider","asr_key","asr_local_model","asr_language","min_len","max_len","max_clips","min_score","layout","style","captions","caption_script","quality","edits","watermark","live_check_min","live_per_hour","buffer_min","agents","force_min","wait_for_live","max_height","cookies_file","cookies_browser","yt_client_id","yt_client_secret","yt_auto_upload","yt_privacy"];
+
+async function api(path, body, method) {
+  const r = await fetch(path, {method: method || (body !== undefined ? "POST" : "GET"), headers: body !== undefined ? {"Content-Type": "application/json"} : {}, body: body !== undefined ? JSON.stringify(body) : undefined});
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.detail || "Something went wrong (" + r.status + ").");
+  return d;
+}
+function toast(m) { const t = $("#toast"); t.textContent = m; t.style.display = "block"; clearTimeout(t._t); t._t = setTimeout(() => t.style.display = "none", 3500); }
+function fmt(sec) { sec = Math.max(0, Math.round(sec || 0)); const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60; return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(s).padStart(2, "0"); }
+function form() { const o = {}; for (const k of FIELDS) { const el = $("#" + k); if (el) o[k] = el.type === "checkbox" ? el.checked : el.value; } return o; }
+function result(id, cls, msg) { const el = $(id); el.className = "result " + cls; el.textContent = msg; }
+
+function fillSettings() {
+  const st = S.settings;
+  $("#ai_provider").innerHTML = S.providers.map(p => `<option value="${p.id}">${esc(p.label)}</option>`).join("");
+  $("#layout").innerHTML = Object.entries(S.layouts).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("");
+  $("#style").innerHTML = Object.entries(S.styles).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("");
+  for (const k of FIELDS) { const el = $("#" + k); if (!el) continue; if (el.type === "checkbox") el.checked = !!st[k]; else el.value = st[k] ?? ""; }
+  providerChanged(); asrChanged();
+}
+function providerChanged() {
+  const p = S.providers.find(x => x.id === $("#ai_provider").value) || S.providers[0];
+  $("#f-key").style.display = p.needs_key || p.id === "custom" ? "" : "none";
+  $("#f-url").style.display = p.needs_url || p.id === "ollama" ? "" : "none";
+  $("#keyLink").innerHTML = p.key_url ? `Get a key: <a href="${esc(p.key_url)}" target="_blank" rel="noopener">${esc(p.key_url.replace("https://", ""))}</a>` : "";
+  $("#modelList").innerHTML = p.models.map(m => `<option value="${esc(m)}">`).join("");
+  $("#ai_model").placeholder = p.models[0] ? "Suggested: " + p.models[0] : "model id";
+}
+function asrChanged() { const loc = $("#asr_provider").value === "local"; $("#f-asrkey").style.display = loc ? "none" : ""; $("#f-asrmodel").style.display = loc ? "" : "none"; }
+
+function clipHTML(job, c) {
+  const base = `/media/${job.id}/`;
+  let shot;
+  if (c.status === "done") shot = `<video src="${base}${c.file}" poster="${base}${c.cover}" controls preload="none" playsinline></video>`;
+  else if (c.status === "error") shot = `<div class="wait" style="color:#ff9aa5">Could not make this one.<br>${esc(c.error)}</div>`;
+  else shot = `<div class="wait"><div><div class="spin"></div>${c.status === "rendering" ? "Editing…" : "Waiting its turn"}</div></div>`;
+  const yt = c.youtube || {};
+  let ytBtn = "";
+  if (c.status === "done") {
+    if (yt.status === "done") ytBtn = `<a class="btn sm" href="${esc(yt.url)}" target="_blank" rel="noopener">On YouTube ↗</a>`;
+    else if (yt.status === "uploading") ytBtn = `<button class="btn sm" disabled>Posting…</button>`;
+    else if (S.settings.yt_connected) ytBtn = `<button class="btn sm" data-act="yt" data-job="${job.id}" data-clip="${c.id}">Post to YouTube</button>`;
+  }
+  clipText[job.id + c.id] = [c.title, c.description, (c.hashtags || []).map(h => "#" + h).join(" ")].filter(Boolean).join("\n\n");
+  return `<div class="shot">${shot}${c.score ? `<span class="score" title="Viral score, 0 to 100">VIRAL ${c.score}</span>` : ""}</div>
+  <div class="cbody"><div class="ctitle">${esc(c.title || c.hook || c.id)}</div>
+  <div class="cwhy">${esc(fmt(c.start))} – ${esc(fmt(c.end))}${c.duration ? " · " + c.duration + " s" : ""}${c.cuts ? " · " + c.cuts + " cuts" : ""}${c.face_shots ? " · face tracked" : ""}${c.edited ? " · edited" : ""}${(c.agents || []).length ? "<br>Spotted by: " + esc(c.agents.join(", ")) : ""}${c.reason ? "<br>" + esc(c.reason) : ""}${yt.status === "error" ? `<br><span style="color:#ff9aa5">YouTube: ${esc(yt.error)}</span>` : ""}</div>
+  ${c.status === "done" ? `<div class="crow"><a class="btn sm primary" href="${base}${c.file}?download=1">Download</a><button class="btn sm" data-act="copy" data-key="${job.id + c.id}">Copy caption</button>${ytBtn}<button class="btn sm" data-act="edit" data-job="${job.id}" data-clip="${c.id}">Edit</button><button class="btn sm danger" data-act="delclip" data-job="${job.id}" data-clip="${c.id}" title="Delete this short">✕</button></div>` : c.status === "error" ? `<div class="crow"><button class="btn sm danger" data-act="delclip" data-job="${job.id}" data-clip="${c.id}">Remove</button></div>` : ""}</div>`;
+}
+function jobHead(job) {
+  const active = ["queued", "working", "live", "waiting"].includes(job.status), isLive = job.kind === "live";
+  const L = job.live;
+  let live = "";
+  if (isLive && L && job.status === "live") {
+    const lv = L.level || [], lo = Math.min(...lv), hi = Math.max(...lv), sorted = [...lv].sort((a, b) => a - b), med = sorted[Math.floor(sorted.length / 2)] ?? -40;
+    live = `<div class="livebox">
+      <div class="box"><h4>Being said right now</h4><div class="heard">${(L.lines || []).map(t => `<div>${esc(t)}</div>`).join("") || '<div style="opacity:.6">Listening…</div>'}</div>
+        <div class="meter">${lv.map(v => `<i class="${v > med + 6 ? "hot" : ""}" style="height:${Math.round(8 + 92 * (v - lo) / Math.max(1, hi - lo))}%"></i>`).join("")}</div>
+        <div class="stats"><span>On air <b>${fmt(L.elapsed)}</b></span><span>Buffer <b>${fmt(L.buffer_sec)}</b></span><span>Words <b>${L.words}</b></span><span>AI checks <b>${L.checks}</b></span><span>Shorts this hour <b>${L.hour}</b></span>${L.chat ? "<span>Chat <b>on</b></span>" : ""}${L.behind > 40 ? `<span style="color:#ffb86b">Transcript ${L.behind}s behind</span>` : ""}</div></div>
+      <div class="box"><h4>Decisions</h4><div class="log">${(L.verdicts || []).map(v => `<div><b>${fmt(v.t)}</b> ${esc(v.m)}</div>`).join("") || `<div>${L.ai ? "The first check comes after a few minutes of talking." : "No AI key: loud moments are clipped by themselves."}</div>`}</div></div></div>`;
+  }
+  return `<div class="jhead"><div style="flex:1;min-width:220px">
+      <div class="jtitle">${esc(job.title || "Untitled")}</div>
+      <div class="jmeta">${esc(job.uploader || "")}${job.uploader ? " · " : ""}${job.duration && !isLive ? fmt(job.duration) + " · " : ""}${job.tokens ? job.tokens.toLocaleString() + " AI tokens" : ""}</div></div>
+    <span class="badge ${isLive && active ? "live" : ""}">${isLive ? (job.status === "live" ? "● LIVE" : job.status === "waiting" ? "WAITING" : "STREAM") : "VIDEO"}</span>
+    ${isLive && job.status === "live" ? `<button class="btn sm" data-act="clipnow" data-job="${job.id}">Clip last 45 s</button>` : ""}
+    ${active ? `<button class="btn sm" data-act="stop" data-job="${job.id}">Stop</button>` : ""}
+    <button class="btn sm danger" data-act="del" data-job="${job.id}">Delete</button></div>
+  ${active && !isLive ? `<div class="bar"><i style="width:${Math.round((job.progress || 0) * 100)}%"></i></div>` : ""}
+  <div class="stage" style="${isLive || !active ? "margin-top:8px" : ""}">${job.status === "live" || job.status === "waiting" ? '<span class="dot live" style="display:inline-block;margin-right:6px"></span>' : ""}${esc(job.stage)}${job.error ? ` <span style="color:#ff9aa5">· ${esc(job.error)}</span>` : ""}${job.note ? ` <span style="color:#f5e9a0">· ${esc(job.note)}</span>` : ""}</div>${live}`;
+}
+// Only what changed is redrawn, so a short that is playing keeps playing while the page refreshes.
+function sync(parent, items, key, html, cls) {
+  const seen = new Set();
+  items.forEach((it, i) => {
+    const k = key(it); seen.add(k);
+    let el = [...parent.children].find(c => c.dataset.k === k);
+    if (!el) { el = document.createElement("div"); el.className = cls; el.dataset.k = k; }
+    const h = html(it);
+    if (el._h !== h) { el.innerHTML = h; el._h = h; }
+    if (parent.children[i] !== el) parent.insertBefore(el, parent.children[i] || null);
+  });
+  [...parent.children].forEach(c => { if (!seen.has(c.dataset.k)) c.remove(); });
+}
+function render() {
+  const pill = $("#aiPill");
+  pill.innerHTML = S.ai_ready ? `<span class="dot ok"></span><span>AI connected</span>` : `<span class="dot bad"></span><span>No AI key</span>`;
+  let n = "";
+  if (S.missing.length) n += `<div class="notice err">ffmpeg is not installed on this machine, so no video can be made. Install it (Linux: <code>sudo apt install ffmpeg</code>) and start ClipStorm again.</div>`;
+  if (!S.ai_ready) n += `<div class="notice"><span style="flex:1;min-width:220px"><b>Connect an AI to get the best shorts.</b> Without one, ClipStorm still works but picks moments only by loudness, with no hook or title.</span><button class="btn primary sm" id="noticeAI">Add AI key</button></div>`;
+  if ($("#notices")._h !== n) { $("#notices").innerHTML = n; $("#notices")._h = n; }
+  const box = $("#jobs");
+  if (!S.jobs.length) {
+    if (!box._empty) { box.innerHTML = `<div class="empty"><div class="how">
+      <div><b>1. Paste a link</b>A finished video, or a stream that is live right now. A channel link waits until it goes live.</div>
+      <div><b>2. ClipStorm watches it</b>It writes down every word, follows loudness and chat, and lets the AI pick what a stranger would stop scrolling for.</div>
+      <div><b>3. Shorts appear here</b>Vertical, edited, captioned, with a hook and a title. Download them or post to your channel.</div></div></div>`; box._empty = true; }
+    return;
+  }
+  if (box._empty) { box.innerHTML = ""; box._empty = false; }
+  sync(box, S.jobs, j => j.id, j => `<div data-part="head"></div><div class="clips" data-part="clips"></div>`, "job");
+  for (const job of S.jobs) {
+    const el = [...box.children].find(c => c.dataset.k === job.id);
+    const head = el.querySelector('[data-part="head"]'), h = jobHead(job);
+    if (head._h !== h) { head.innerHTML = h; head._h = h; }
+    sync(el.querySelector('[data-part="clips"]'), [...job.clips].reverse(), c => c.id, c => clipHTML(job, c), "clip");
+  }
+}
+const CH_STATE = {recording: ["live", "Recording now"], live: ["ok", "Live (not recording)"], offline: ["", "Offline"], busy: ["bad", "Live, waiting for a free slot"], error: ["bad", "Could not check"], unknown: ["", "Not checked yet"]};
+function renderMore() {
+  const all = [];
+  for (const job of S.jobs) for (const c of job.clips) if (c.status !== "error") all.push({job, c});
+  const by = $("#libSort").value;
+  all.sort((a, b) => by === "score" ? (b.c.score || 0) - (a.c.score || 0) || b.c.made_at - a.c.made_at : b.c.made_at - a.c.made_at);
+  $("#nLib").textContent = all.filter(x => x.c.status === "done").length;
+  const lib = $("#lib");
+  if (!all.length) { if (!lib._empty) { lib.innerHTML = `<div class="empty" style="grid-column:1/-1">No shorts yet. Paste a link on the Create tab.</div>`; lib._empty = true; } }
+  else { if (lib._empty) { lib.innerHTML = ""; lib._empty = false; }
+    sync(lib, all, x => x.job.id + x.c.id, x => clipHTML(x.job, x.c).replace('<div class="cwhy">', `<div class="src">From: ${esc(x.job.title)}</div><div class="cwhy">`), "clip"); }
+  $("#nCh").textContent = S.channels.length;
+  const box = $("#chans");
+  if (!S.channels.length) { if (!box._empty) { box.innerHTML = `<div class="empty">No channels yet. Add the streamers you want shorts from.</div>`; box._empty = true; } return; }
+  if (box._empty) { box.innerHTML = ""; box._empty = false; }
+  sync(box, S.channels, c => c.id, c => { const [dot, label] = CH_STATE[c.state] || CH_STATE.unknown;
+    return `<span class="dot ${dot}"></span><div style="flex:1;min-width:200px"><div class="nm">${esc(c.name)}</div><div class="u">${esc(c.url)}</div><div class="u">${esc(label)}${c.note && c.state !== "recording" ? " · " + esc(c.note) : ""}${c.checked ? " · checked " + Math.max(0, Math.round((Date.now() / 1000 - c.checked) / 60)) + " min ago" : ""}</div></div>
+    <label class="chk" style="margin:0"><input type="checkbox" data-act="chauto" data-ch="${c.id}" ${c.auto ? "checked" : ""}><span>Record when live</span></label>
+    <button class="btn sm" data-act="chcheck" data-ch="${c.id}">Check now</button><button class="btn sm danger" data-act="chdel" data-ch="${c.id}">Remove</button>`; }, "chan");
+}
+async function refresh() {
+  try { S = await api("/api/state"); } catch (e) { return; }
+  if (!filled) { fillSettings(); filled = true; if (location.hash === "#settings") openSettings("yt"); }
+  render(); renderMore();
+}
+function openSettings(tab) { $("#veil").classList.add("on"); if (tab) showTab(tab); api("/api/youtube/redirect").then(d => $("#ytRedirect").textContent = d.uri).catch(() => {}); }
+function showTab(t) { $$(".tab").forEach(b => b.classList.toggle("on", b.dataset.t === t)); $$(".pane").forEach(p => p.classList.toggle("on", p.id === "p-" + t)); }
+
+$("#openSettings").onclick = () => openSettings();
+$("#closeSettings").onclick = () => { $("#veil").classList.remove("on"); history.replaceState(null, "", location.pathname); };
+$("#veil").onclick = e => { if (e.target.id === "veil") $("#closeSettings").onclick(); };
+$("#tabs").onclick = e => { if (e.target.dataset.t) showTab(e.target.dataset.t); };
+$("#ai_provider").onchange = () => { $("#ai_model").value = ""; $("#ai_key").value = ""; providerChanged(); };
+$("#asr_provider").onchange = asrChanged;
+$("#notices").onclick = e => { if (e.target.id === "noticeAI") openSettings("ai"); };
+
+$("#aiTest").onclick = async () => {
+  result("#aiResult", "wait", "Connecting… sending one small request to check the key and the model.");
+  $("#aiTest").disabled = true;
+  try { const f = form(); const d = await api("/api/ai/test", {ai_provider: f.ai_provider, ai_key: f.ai_key, ai_model: f.ai_model, ai_base_url: f.ai_base_url});
+    result("#aiResult", d.ok ? "ok" : "bad", (d.ok ? "✓ Success. " : "✗ ") + d.message); if (d.ok) { toast("AI connected and saved"); refresh(); } }
+  catch (e) { result("#aiResult", "bad", "✗ " + e.message); }
+  $("#aiTest").disabled = false;
+};
+$("#aiModels").onclick = async () => {
+  result("#aiResult", "wait", "Asking the service for its models…");
+  try { const f = form(); const d = await api("/api/ai/models", {ai_provider: f.ai_provider, ai_key: f.ai_key, ai_base_url: f.ai_base_url});
+    if (d.ok) { $("#modelList").innerHTML = d.models.map(m => `<option value="${esc(m)}">`).join(""); result("#aiResult", "ok", d.message + " Click the model box to choose one."); $("#ai_model").focus(); }
+    else result("#aiResult", "bad", "✗ " + d.message); }
+  catch (e) { result("#aiResult", "bad", "✗ " + e.message); }
+};
+$("#asrTest").onclick = async () => {
+  result("#asrResult", "wait", "Testing… the first time on this machine, the speech model is downloaded (a minute or two).");
+  $("#asrTest").disabled = true;
+  try { const f = form(); const d = await api("/api/asr/test", {asr_provider: f.asr_provider, asr_key: f.asr_key, asr_local_model: f.asr_local_model, asr_language: f.asr_language});
+    result("#asrResult", d.ok ? "ok" : "bad", (d.ok ? "✓ Success. " : "✗ ") + d.message); if (d.ok) refresh(); }
+  catch (e) { result("#asrResult", "bad", "✗ " + e.message); }
+  $("#asrTest").disabled = false;
+};
+$$("[data-save]").forEach(b => b.onclick = async () => { try { await api("/api/settings", form()); toast("Saved"); refresh(); } catch (e) { toast(e.message); } });
+$("#ytConnect").onclick = async () => { try { await api("/api/settings", form()); location.href = "/oauth/youtube/start"; } catch (e) { result("#ytResult", "bad", "✗ " + e.message); } };
+$("#ytTest").onclick = async () => { result("#ytResult", "wait", "Checking…"); try { await api("/api/settings", form()); const d = await api("/api/youtube/test", {}); result("#ytResult", d.ok ? "ok" : "bad", (d.ok ? "✓ Success. " : "✗ ") + d.message); refresh(); } catch (e) { result("#ytResult", "bad", "✗ " + e.message); } };
+$("#ytSignin").onclick = async () => { result("#signinResult", "wait", "Looking at the browsers on this computer…"); try { const d = await api("/api/youtube/signin", {}); result("#signinResult", d.ok ? "ok" : "bad", (d.ok ? "✓ " : "✗ ") + d.message); } catch (e) { result("#signinResult", "bad", "✗ " + e.message); } };
+$("#ytOff").onclick = async () => { await api("/api/youtube/disconnect", {}); result("#ytResult", "ok", "Disconnected."); filled = false; refresh(); };
+
+$("#goForm").onsubmit = async e => {
+  e.preventDefault();
+  const url = $("#url").value.trim(); if (!url) return;
+  const b = $("#goBtn"); b.disabled = true; b.textContent = "Looking at the link…";
+  try { const d = await api("/api/start", {url}); $("#url").value = ""; toast(d.kind === "live" ? "Watching the stream. Shorts will appear as it runs." : "Started. Shorts will appear below."); refresh(); }
+  catch (err) { toast(err.message); }
+  b.disabled = false; b.textContent = "Make shorts";
+};
+$("#file").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  toast("Uploading " + f.name + "…");
+  const fd = new FormData(); fd.append("file", f);
+  try { const r = await fetch("/api/upload", {method: "POST", body: fd}); const d = await r.json(); if (!r.ok) throw new Error(d.detail || "Upload failed."); toast("Uploaded. Working on it."); refresh(); }
+  catch (err) { toast(err.message); }
+  e.target.value = "";
+};
+let editing = null;
+function openEdit(jobId, clipId) {
+  const job = S.jobs.find(j => j.id === jobId), c = job && job.clips.find(x => x.id === clipId); if (!c) return;
+  editing = {job: jobId, clip: clipId};
+  $("#e_layout").innerHTML = $("#layout").innerHTML; $("#e_style").innerHTML = $("#style").innerHTML;
+  for (const k of ["hook", "title", "description", "start", "end", "layout", "style"]) $("#e_" + k).value = c[k] ?? "";
+  $("#e_captions").checked = c.captions !== false; $("#e_edits").checked = c.edits !== false;
+  $("#editResult").className = "result"; $("#editVeil").classList.add("on");
+}
+$("#editClose").onclick = () => $("#editVeil").classList.remove("on");
+$("#editVeil").onclick = e => { if (e.target.id === "editVeil") $("#editVeil").classList.remove("on"); };
+$("#editSave").onclick = async () => {
+  const body = {captions: $("#e_captions").checked, edits: $("#e_edits").checked};
+  for (const k of ["hook", "title", "description", "start", "end", "layout", "style"]) body[k] = $("#e_" + k).value;
+  try { await api(`/api/jobs/${editing.job}/clips/${editing.clip}/edit`, body); $("#editVeil").classList.remove("on"); toast("Making the short again…"); refresh(); }
+  catch (e) { result("#editResult", "bad", "✗ " + e.message); }
+};
+$("#nav").onclick = e => { const v = e.target.closest("[data-v]"); if (!v) return; $$("#nav button").forEach(b => b.classList.toggle("on", b === v)); $$(".view").forEach(x => x.classList.toggle("on", x.id === "v-" + v.dataset.v)); };
+$("#libSort").onchange = () => renderMore();
+$("#chForm").onsubmit = async e => { e.preventDefault(); try { await api("/api/channels", {url: $("#chUrl").value, name: $("#chName").value}); $("#chUrl").value = $("#chName").value = ""; toast("Channel added. Checking if it is live…"); refresh(); } catch (err) { toast(err.message); } };
+document.body.addEventListener("change", async e => { const b = e.target.closest('[data-act="chauto"]'); if (!b) return; try { await api(`/api/channels/${b.dataset.ch}`, {auto: b.checked}); refresh(); } catch (err) { toast(err.message); } });
+document.body.addEventListener("click", async e => {
+  const b = e.target.closest("[data-act]"); if (!b || b.dataset.act === "chauto") return;
+  const {act, job, clip, key, ch} = b.dataset;
+  try {
+    if (act === "copy") { await navigator.clipboard.writeText(clipText[key] || ""); toast("Title, description and hashtags copied"); return; }
+    if (act === "del" && !confirm("Delete this job and all its shorts?")) return;
+    if (act === "stop") await api(`/api/jobs/${job}/stop`, {});
+    if (act === "del") await api(`/api/jobs/${job}`, undefined, "DELETE");
+    if (act === "clipnow") { await api(`/api/jobs/${job}/clip`, {seconds: 45}); toast("Clipping the last 45 seconds"); }
+    if (act === "yt") { await api(`/api/jobs/${job}/clips/${clip}/youtube`, {}); toast("Posting to YouTube…"); }
+    if (act === "edit") { openEdit(job, clip); return; }
+    if (act === "delclip") { if (!confirm("Delete this short?")) return; await api(`/api/jobs/${job}/clips/${clip}`, undefined, "DELETE"); }
+    if (act === "chcheck") { await api(`/api/channels/${ch}`, {check: true}); toast("Checking…"); setTimeout(refresh, 2500); }
+    if (act === "chdel") { if (!confirm("Remove this channel from the list?")) return; await api(`/api/channels/${ch}`, undefined, "DELETE"); }
+    refresh();
+  } catch (err) { toast(err.message); }
+});
+refresh(); setInterval(refresh, 2000);
+</script>
+</body>
+</html>
